@@ -6987,6 +6987,7 @@ CXCursor clang_getCursorDefinition(CXCursor C) {
   case Decl::TopLevelStmt:
   case Decl::StaticAssert:
   case Decl::Block:
+  case Decl::OutlinedFunction:
   case Decl::Captured:
   case Decl::OMPCapturedExpr:
   case Decl::Label: // FIXME: Is this right??
