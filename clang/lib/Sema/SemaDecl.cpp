@@ -16135,6 +16135,18 @@ Decl *Sema::ActOnFinishFunctionBody(Decl *dcl, Stmt *Body,
       CheckCoroutineWrapper(FD);
   }
 
+  // Create SYCL kernel entry point function outline.
+  if (Body && FD && !FD->isDependentContext() &&
+      FD->hasAttr<SYCLKernelEntryPointAttr>()) {
+    // FIXME: Issue proper diagnostics for all of these scenarios.
+    assert(!FSI->isCoroutine());
+
+    StmtResult SR = SYCL().BuildSYCLKernelCallStmt(FD, Body);
+    if (SR.isInvalid())
+      return nullptr;
+    Body = SR.get();
+  }
+
   {
     // Do not call PopExpressionEvaluationContext() if it is a lambda because
     // one is already popped when finishing the lambda in BuildLambdaExpr().

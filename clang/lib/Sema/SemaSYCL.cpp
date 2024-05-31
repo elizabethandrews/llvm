@@ -24,6 +24,7 @@
 #include "clang/Basic/TargetInfo.h"
 #include "clang/Basic/Version.h"
 #include "clang/Sema/Initialization.h"
+#include "clang/AST/StmtSYCL.h"
 #include "clang/Sema/Sema.h"
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/SmallPtrSet.h"
@@ -6620,4 +6621,59 @@ void SemaSYCL::handleKernelEntryPointAttr(Decl *D, const ParsedAttr &AL) {
   assert(TSI && "no type source info for attribute argument");
   D->addAttr(::new (SemaRef.Context) SYCLKernelEntryPointAttr(SemaRef.Context,
                                                               AL, TSI));
+}
+
+StmtResult SemaSYCL::BuildSYCLKernelCallStmt(FunctionDecl *FD, Stmt *Body) {
+  // FIXME: Issue proper diagnostics for all of these scenarios.
+  if (auto *MD = dyn_cast<CXXMethodDecl>(FD))
+    assert(MD->isStatic());
+  assert(FD->hasPrototype());
+  assert(!FD->isVariadic());
+  assert(!FD->isDeleted());
+  assert(!FD->isDefaulted());
+  assert(!FD->isConstexpr());
+  assert(!FD->isConsteval());
+  assert(!FD->isMultiVersion());
+  assert(!FD->isNoReturn());
+  assert(FD->getReturnType()->isVoidType());
+
+  assert(SemaRef.CurContext == FD);
+  OutlinedFunctionDecl *OFD =
+      OutlinedFunctionDecl::Create(getASTContext(), FD, FD->getNumParams());
+  unsigned i = 0;
+  for (const auto &p : FD->parameters()) {
+    ImplicitParamDecl *IPD =
+        ImplicitParamDecl::Create(getASTContext(), OFD, SourceLocation(),
+                                  p->getIdentifier(), p->getType(),
+                                  ImplicitParamKind::Other);
+    OFD->setParam(i, IPD);
+    ++i;
+  }
+
+  // FIXME: For short-term testing purposes, a sequence of statements that
+  // FIXME: references each of the implicit parameter declarations is
+  // FIXME: generated.
+  SmallVector<Stmt *, 8> OFDBodyStmts;
+  i = 0;
+  for (const auto &p : FD->parameters()) {
+    QualType QT = p->getType().getNonReferenceType();
+    DeclRefExpr *DRE = new (getASTContext()) DeclRefExpr(getASTContext(),
+                                                         OFD->getParam(i),
+                /* RefersToEnclosingVariableOrCapture */ false,
+                                                         QT,
+                                                         VK_LValue,
+                                                         SourceLocation());
+    assert(DRE);
+    OFDBodyStmts.push_back(DRE);
+    ++i;
+  }
+
+  Stmt *OFDBody =
+      CompoundStmt::Create(getASTContext(), OFDBodyStmts, FPOptionsOverride(),
+                           SourceLocation(), SourceLocation());
+  OFD->setBody(OFDBody);
+  OFD->setNothrow();
+  Stmt *NewBody = new (getASTContext()) SYCLKernelCallStmt(Body, OFD);
+
+  return NewBody;
 }

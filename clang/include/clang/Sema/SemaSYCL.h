@@ -395,6 +395,8 @@ public:
                                        SourceLocation RParen,
                                        ParsedType ParsedTy);
   void handleKernelEntryPointAttr(Decl *D, const ParsedAttr &AL);
+
+  StmtResult BuildSYCLKernelCallStmt(FunctionDecl *FD, Stmt *Body);
 };
 
 } // namespace clang
