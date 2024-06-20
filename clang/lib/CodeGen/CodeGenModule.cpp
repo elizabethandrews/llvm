@@ -3407,6 +3407,21 @@ void CodeGenModule::EmitDeferred() {
   CurDeclsToEmit.swap(DeferredDeclsToEmit);
 
   for (GlobalDecl &D : CurDeclsToEmit) {
+    // If the Decl corresponds to a SYCL kernel entry point function, generate
+    // and emit the corresponding the SYCL kernel caller function i.e the
+    // offload kernel.
+    if (const auto *FD = D.getDecl()->getAsFunction()) {
+      if (LangOpts.SYCLIsDevice && FD->hasAttr<SYCLKernelEntryPointAttr>() &&
+          FD->isDefined()) {
+        // Generate and emit the offload kernel
+        EmitSYCLKernelCaller(FD, getContext());
+        // The offload kernel invokes the operator method of the SYCL kernel
+        // object i.e. the SYCL kernel function is invoked. Emit this function.
+        EmitDeferred();
+        // Do not emit the SYCL kernel entry point function.
+        continue;
+      }
+    }
     // Emit a dummy __host__ function if a legit one is not already present in
     // case of SYCL compilation of CUDA sources.
     if (SYCLCUDAIsHost(LangOpts)) {

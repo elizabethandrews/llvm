@@ -12001,6 +12001,13 @@ bool ASTContext::DeclMustBeEmitted(const Decl *D) {
   if (D->hasAttr<WeakRefAttr>())
     return false;
 
+  // SYCL kernel entry point functions are used to generate and emit
+  // the offload kernel.
+  if (LangOpts.SYCLIsDevice) {
+    if (D->hasAttr<SYCLKernelEntryPointAttr>())
+      return true;
+  }
+
   if (LangOpts.SYCLIsDevice && !D->hasAttr<OpenCLKernelAttr>() &&
       !D->hasAttr<SYCLDeviceAttr>())
     return false;
