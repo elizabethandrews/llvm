@@ -6866,7 +6866,7 @@ private:
 } // unnamed namespace
 
 static SYCLKernelInfo BuildSYCLKernelInfo(ASTContext &Context,
-                                          QualType KernelNameType) {
+                                          CanQualType KernelNameType) {
   // FIXME: Host and device compilations must agree on a name for the generated
   // FIXME: SYCL kernel caller function. The name is provided to the SYCL
   // FIXME: library on the host via __builtin_sycl_kernel_name() and the SYCL
@@ -6946,7 +6946,8 @@ StmtResult SemaSYCL::BuildSYCLKernelCallStmt(FunctionDecl *FD, Stmt *Body) {
 
   const auto *SKEPAttr = FD->getAttr<SYCLKernelEntryPointAttr>();
   assert(SKEPAttr && "Missing sycl_kernel_entry_point attribute");
-  QualType KernelNameType = SKEPAttr->getKernelName();
+  CanQualType KernelNameType =
+      getASTContext().getCanonicalType(SKEPAttr->getKernelName());
 
   getASTContext().SYCLKernels.insert_or_assign(
       KernelNameType,
