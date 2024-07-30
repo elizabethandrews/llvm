@@ -12346,10 +12346,33 @@ def err_sycl_special_type_num_init_method : Error<
 def warn_launch_bounds_is_cuda_specific : Warning<
   "%0 attribute ignored, only applicable when targeting Nvidia devices">,
   InGroup<IgnoredAttributes>;
-
 def warn_cuda_maxclusterrank_sm_90 : Warning<
   "'maxclusterrank' requires sm_90 or higher, CUDA arch provided: %0, ignoring "
   "%1 attribute">, InGroup<IgnoredAttributes>;
+
+// SYCL kernel entry point diagnostics
+def err_sycl_entry_point_invalid : Error<
+  "'sycl_kernel_entry_point' attribute cannot be applied to a"
+  " %select{non-static member|variadic|deleted|defaulted|constexpr|consteval|"
+           "noreturn|coroutine}0 function">;
+def err_sycl_entry_point_invalid_redeclaration : Error<
+  "'sycl_kernel_entry_point' kernel name argument does not match prior"
+  " declaration%diff{: $ vs $|}0,1">;
+def warn_sycl_entry_point_redundant_declaration : Warning<
+  "redundant 'sycl_kernel_entry_point' attribute">;
+def err_sycl_entry_point_after_definition : Error<
+  "'sycl_kernel_entry_point' attribute cannot be added to a function after the"
+  " function is defined">;
+def err_sycl_entry_point_return_type : Error<
+  "'sycl_kernel_entry_point' attribute only applies to functions with a"
+  " 'void' return type">;
+def err_sycl_entry_point_on_main : Error<
+  "'main' cannot be declared with the 'sycl_kernel_entry_point' attribute">;
+def err_sycl_kernel_name_type : Error<
+  "'sycl_kernel_entry_point' kernel name argument must be a class type">;
+def err_sycl_kernel_name_conflict : Error<
+  "'sycl_kernel_entry_point' kernel name argument conflicts with a previous"
+  " declaration">;
 
 // VTable pointer authentication errors
 def err_non_polymorphic_vtable_pointer_auth : Error<

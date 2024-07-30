@@ -419,6 +419,7 @@ public:
                                        ParsedType ParsedTy);
 
   StmtResult BuildSYCLKernelCallStmt(FunctionDecl *FD, Stmt *Body);
+  void CheckSYCLEntryPointFunctionDecl(FunctionDecl *FD);
 
   void handleKernelAttr(Decl *D, const ParsedAttr &AL);
   void handleKernelEntryPointAttr(Decl *D, const ParsedAttr &AL);
