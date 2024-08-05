@@ -1510,7 +1510,7 @@ def SYCLKernelEntryPoint : InheritableAttr {
   let Args = [TypeArgument<"KernelName">];
   let Subjects = SubjectList<[Function], ErrorDiag>;
   let TemplateDependent = 1;
-  let LangOpts = [SYCLIsDevice, SilentlyIgnoreSYCLIsHost];
+  let LangOpts = [SYCLIsHost, SYCLIsDevice];
   let Documentation = [SYCLKernelEntryPointDocs];
 }
 
