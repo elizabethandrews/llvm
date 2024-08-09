@@ -12373,6 +12373,9 @@ def err_sycl_kernel_name_type : Error<
 def err_sycl_kernel_name_conflict : Error<
   "'sycl_kernel_entry_point' kernel name argument conflicts with a previous"
   " declaration">;
+def err_builtin_invalid_argument_count : Error<"builtin requires exactly 1 argument">;
+def err_builtin_invalid_argument : Error<"invalid argument; argument must be a class or struct type"
+                                         " with a member type alias named 'type'">;
 
 // VTable pointer authentication errors
 def err_non_polymorphic_vtable_pointer_auth : Error<
