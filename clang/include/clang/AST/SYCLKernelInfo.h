@@ -19,21 +19,17 @@
 
 namespace clang {
 
-class SYCLKernelInfo {
-public:
-  // FIXME: Added full enum to match the library implementation.
-  // Why does kind_first and kind_last exist?
-  enum kernel_param_kind_t {
-    kind_first,
-    kind_accessor = kind_first,
-    kind_std_layout,
-    kind_sampler,
-    kind_pointer,
-    kind_specialization_constants_buffer,
-    kind_stream,
-    kind_last = kind_stream
-  };
+enum class kernel_param_kind_t : int {
+  kind_accessor = 0,
+  kind_std_layout = 1,
+  kind_sampler = 2,
+  kind_pointer = 3,
+  kind_specialization_constants_buffer = 4,
+  kind_stream = 5,
+  kind_invalid = 0xf, // not a valid kernel kind
+};
 
+class SYCLKernelInfo {
 public:
   SYCLKernelInfo(CanQualType KernelNameType,
                  const FunctionDecl *KernelEntryPointDecl,
@@ -71,7 +67,7 @@ public:
 private:
   // Kernel caller function parameter descriptor.
   struct KernelParamDesc {
-    kernel_param_kind_t Kind = kind_last;
+    kernel_param_kind_t Kind = kernel_param_kind_t::kind_invalid;
     QualType Type;
     KernelParamDesc() = default;
   };

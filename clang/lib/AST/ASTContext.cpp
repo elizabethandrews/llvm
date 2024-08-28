@@ -14247,7 +14247,7 @@ static void CreateSYCLKernelParamDesc(ASTContext &Ctx, const FunctionDecl *FD,
     return;
 
   for (const ParmVarDecl *KernelParam : FD->parameters()) {
-    KernelInfo.addParamDesc(SYCLKernelInfo::kind_std_layout,
+    KernelInfo.addParamDesc(kernel_param_kind_t::kind_std_layout,
                             KernelParam->getType());
   }
 }

@@ -6230,7 +6230,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
     const SYCLKernelInfo *KernelInfo = GetSYCLKernelInfo(getContext(), E);
     assert(KernelInfo && "Type does not correspond to a SYCL kernel name.");
     return RValue::get(
-        llvm::ConstantInt::get(Int32Ty, KernelInfo->GetParamCount()));
+        llvm::ConstantInt::get(IntTy, KernelInfo->GetParamCount()));
   }
   case Builtin::BI__builtin_sycl_kernel_param_kind: {
     // Retrieve the kernel info corresponding to kernel name type.
@@ -6241,8 +6241,8 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
     Expr::EvalResult Result;
     ParamNoExpr->EvaluateAsInt(Result, getContext());
     unsigned ParamNo = Result.Val.getInt().getZExtValue();
-    return RValue::get(
-        llvm::ConstantInt::get(Int32Ty, KernelInfo->GetParamKind(ParamNo)));
+    return RValue::get(llvm::ConstantInt::get(
+        IntTy, static_cast<int>(KernelInfo->GetParamKind(ParamNo))));
   }
   case Builtin::BI__builtin_sycl_kernel_param_size: {
     // Retrieve the kernel info corresponding to kernel name type.
@@ -6256,7 +6256,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
     QualType ParamTy = KernelInfo->GetParamTy(ParamNo);
     // FIXME: Add check to ensure complete type.
     return RValue::get(llvm::ConstantInt::get(
-        Int32Ty, getContext().getTypeSizeInChars(ParamTy).getQuantity()));
+        IntTy, getContext().getTypeSizeInChars(ParamTy).getQuantity()));
   }
   case Builtin::BI__builtin_sycl_kernel_param_offset: {
     // Retrieve the kernel info corresponding to kernel name type.
@@ -6265,12 +6265,12 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
     // FIXME: Offset is used only when kernel object is decomposed to identify
     // offset of field in kernel object. What should the offset be for
     // additional non-kernel object parameters?
-    return RValue::get(llvm::ConstantInt::get(Int32Ty, 0));
+    return RValue::get(llvm::ConstantInt::get(IntTy, 0));
   }
   case Builtin::BI__builtin_sycl_kernel_param_access_target: {
     // FIXME: This is a dummy value. This builtin will be implemented when
     // support for special sycl types is implemented.
-    return RValue::get(llvm::ConstantInt::get(Int32Ty, 0));
+    return RValue::get(llvm::ConstantInt::get(IntTy, 0));
   }
   case Builtin::BI__builtin_sycl_kernel_file_name:
   case Builtin::BI__builtin_sycl_kernel_function_name: {
@@ -6289,7 +6289,7 @@ RValue CodeGenFunction::EmitBuiltinExpr(const GlobalDecl GD, unsigned BuiltinID,
     // special status for the kernel object, so it is unclear what these
     // builtins should return, or if they even need to exist. Support will
     // be added or removed after investigation.
-    return RValue::get(llvm::ConstantInt::get(Int32Ty, 0));
+    return RValue::get(llvm::ConstantInt::get(IntTy, 0));
   }
   }
 
