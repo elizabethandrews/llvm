@@ -188,14 +188,14 @@ kernel_param_desc_t getKernelParamDesc(int Idx) {
 #ifndef __INTEL_SYCL_USE_INTEGRATION_HEADERS
   kernel_param_desc_t ParamDesc;
   ParamDesc.kind =
-      __builtin_sycl_kernel_param_kind(KernelIdentity<KernelNameType>(), Idx);
+      __builtin_sycl_kernel_param_kind(KernelIdentity<KernelNameType>(), 0);
   ParamDesc.info = ParamDesc.kind == kernel_param_kind_t::kind_accessor
                        ? __builtin_sycl_kernel_param_access_target(
-                             KernelIdentity<KernelNameType>(), Idx)
+                             KernelIdentity<KernelNameType>(), 0)
                        : __builtin_sycl_kernel_param_size(
-                             KernelIdentity<KernelNameType>(), Idx);
+                             KernelIdentity<KernelNameType>(), 0);
   ParamDesc.offset =
-      __builtin_sycl_kernel_param_offset(KernelIdentity<KernelNameType>(), Idx);
+      __builtin_sycl_kernel_param_offset(KernelIdentity<KernelNameType>(), 0);
   return ParamDesc;
 #else
   return KernelInfo<KernelNameType>::getParamDesc(Idx);
@@ -212,7 +212,11 @@ template <typename KernelNameType> constexpr const char *getKernelName() {
 
 template <typename KernelNameType> constexpr bool isKernelESIMD() {
   // TODO Needs a builtin counterpart
+#ifndef __INTEL_SYCL_USE_INTEGRATION_HEADERS
+  return false;
+#else
   return KernelInfo<KernelNameType>::isESIMD();
+#endif
 }
 
 template <typename KernelNameType> constexpr const char *getKernelFileName() {
@@ -251,7 +255,11 @@ template <typename KernelNameType> constexpr unsigned getKernelColumnNumber() {
 template <typename KernelNameType> constexpr int64_t getKernelSize() {
   // TODO needs a builtin counterpart, but is currently only used for checking
   // cases with external host compiler, which use integration headers.
+#ifndef __INTEL_SYCL_USE_INTEGRATION_HEADERS
+  return 0;
+#else
   return KernelInfo<KernelNameType>::getKernelSize();
+#endif
 }
 } // namespace detail
 } // namespace _V1
