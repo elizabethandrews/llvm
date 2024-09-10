@@ -51,7 +51,7 @@ struct conditional<false, TrueT, FalseT> {
 using int64_t = conditional<sizeof(long) == 8, long, long long>::type;
 
 // kernel parameter kinds
-enum class kernel_param_kind_t {
+enum class kernel_param_kind_t : int {
   kind_accessor = 0,
   kind_std_layout = 1, // standard layout object parameters
   kind_sampler = 2,
@@ -187,8 +187,8 @@ template <typename KernelNameType>
 kernel_param_desc_t getKernelParamDesc(int Idx) {
 #ifndef __INTEL_SYCL_USE_INTEGRATION_HEADERS
   kernel_param_desc_t ParamDesc;
-  ParamDesc.kind =
-      __builtin_sycl_kernel_param_kind(KernelIdentity<KernelNameType>(), 0);
+  ParamDesc.kind = static_cast<kernel_param_kind_t>(
+      __builtin_sycl_kernel_param_kind(KernelIdentity<KernelNameType>(), 0));
   ParamDesc.info = ParamDesc.kind == kernel_param_kind_t::kind_accessor
                        ? __builtin_sycl_kernel_param_access_target(
                              KernelIdentity<KernelNameType>(), 0)
