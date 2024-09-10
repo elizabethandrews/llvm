@@ -9919,7 +9919,8 @@ bool PointerExprEvaluator::VisitBuiltinCallExpr(const CallExpr *E,
   }
   case Builtin::BI__builtin_sycl_kernel_name: {
     const SYCLKernelInfo *KernelInfo = GetSYCLKernelInfo(Info.Ctx, E);
-    assert(KernelInfo && "Type does not correspond to a SYCL kernel name.");
+    if (!KernelInfo)
+      return false;
     // Retrieve the mangled name corresponding to kernel name type.
     std::string ResultStr = KernelInfo->GetKernelName();
     APInt Size(Info.Ctx.getTypeSize(Info.Ctx.getSizeType()),
@@ -9936,6 +9937,9 @@ bool PointerExprEvaluator::VisitBuiltinCallExpr(const CallExpr *E,
   }
   case Builtin::BI__builtin_sycl_kernel_file_name:
   case Builtin::BI__builtin_sycl_kernel_function_name: {
+    const SYCLKernelInfo *KernelInfo = GetSYCLKernelInfo(Info.Ctx, E);
+    if (!KernelInfo)
+      return false;
     // FIXME: Dummy value.
     std::string ResultStr = "DummyString";
     APInt Size(Info.Ctx.getTypeSize(Info.Ctx.getSizeType()),
@@ -9946,6 +9950,7 @@ bool PointerExprEvaluator::VisitBuiltinCallExpr(const CallExpr *E,
     StringLiteral *SL =
         StringLiteral::Create(Info.Ctx, ResultStr, StringLiteralKind::Ordinary,
                               /*Pascal*/ false, StrTy, SourceLocation());
+    Result.addArray(Info, E, cast<ConstantArrayType>(StrTy));
     return evaluateLValue(SL, Result);
   }
 
@@ -12536,13 +12541,15 @@ bool IntExprEvaluator::VisitBuiltinCallExpr(const CallExpr *E,
 
   case Builtin::BI__builtin_sycl_kernel_param_count: {
     const SYCLKernelInfo *KernelInfo = GetSYCLKernelInfo(Info.Ctx, E);
-    assert(KernelInfo && "Type does not correspond to a SYCL kernel name.");
+    if (!KernelInfo)
+      return false;
     return Success(KernelInfo->GetParamCount(), E);
   }
 
   case Builtin::BI__builtin_sycl_kernel_param_kind: {
     const SYCLKernelInfo *KernelInfo = GetSYCLKernelInfo(Info.Ctx, E);
-    assert(KernelInfo && "Type does not correspond to a SYCL kernel name.");
+    if (!KernelInfo)
+      return false;
     const Expr *ParamNoExpr = E->getArg(1);
     Expr::EvalResult Result;
     // FIXME: Should we add some error checking?
@@ -12553,7 +12560,8 @@ bool IntExprEvaluator::VisitBuiltinCallExpr(const CallExpr *E,
 
   case Builtin::BI__builtin_sycl_kernel_param_size: {
     const SYCLKernelInfo *KernelInfo = GetSYCLKernelInfo(Info.Ctx, E);
-    assert(KernelInfo && "Type does not correspond to a SYCL kernel name.");
+    if (!KernelInfo)
+      return false;
     const Expr *ParamNoExpr = E->getArg(1);
     Expr::EvalResult Result;
     // FIXME: Should we add some error checking?
@@ -12565,7 +12573,8 @@ bool IntExprEvaluator::VisitBuiltinCallExpr(const CallExpr *E,
 
   case Builtin::BI__builtin_sycl_kernel_param_offset: {
     const SYCLKernelInfo *KernelInfo = GetSYCLKernelInfo(Info.Ctx, E);
-    assert(KernelInfo && "Type does not correspond to a SYCL kernel name.");
+    if (!KernelInfo)
+      return false;
     const Expr *ParamNoExpr = E->getArg(1);
     Expr::EvalResult Result;
     // FIXME: Should we add some error checking?
@@ -12579,6 +12588,9 @@ bool IntExprEvaluator::VisitBuiltinCallExpr(const CallExpr *E,
   case Builtin::BI__builtin_sycl_kernel_param_access_target:
   case Builtin::BI__builtin_sycl_kernel_line_number:
   case Builtin::BI__builtin_sycl_kernel_column_number: {
+    const SYCLKernelInfo *KernelInfo = GetSYCLKernelInfo(Info.Ctx, E);
+    if (!KernelInfo)
+      return false;
     // FIXME: Dummy value.
     return Success(0, E);
   }
